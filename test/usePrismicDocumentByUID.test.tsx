@@ -7,13 +7,13 @@ import * as msw from "msw";
 import * as mswNode from "msw/node";
 import * as prismic from "@prismicio/client";
 import * as prismicT from "@prismicio/types";
+import * as prismicM from "@prismicio/mock";
 import { renderHook, cleanup } from "@testing-library/react-hooks";
 
 import { createClient } from "./__testutils__/createClient";
 import { createMockQueryHandler } from "./__testutils__/createMockQueryHandler";
 import { createMockRepositoryHandler } from "./__testutils__/createMockRepositoryHandler";
 import { createQueryResponsePages } from "./__testutils__/createQueryResponsePages";
-import { createRepositoryResponse } from "./__testutils__/createRepositoryResponse";
 import { getMasterRef } from "./__testutils__/getMasterRef";
 import { md5 } from "./__testutils__/md5";
 
@@ -36,8 +36,8 @@ const createWrapper = (client: prismic.Client): React.ComponentType => {
 test.serial("returns document with matching UID", async (t) => {
 	const client = createClient(t);
 	const wrapper = createWrapper(client);
-	const repositoryResponse = createRepositoryResponse();
-	const queryResponsePages = createQueryResponsePages();
+	const repositoryResponse = prismicM.api.repository({ seed: t.title });
+	const queryResponsePages = createQueryResponsePages(t);
 	const document = queryResponsePages[0]
 		.results[0] as prismicT.PrismicDocument & { uid: string };
 	const ref = getMasterRef(repositoryResponse);
@@ -66,8 +66,8 @@ test.serial("returns document with matching UID", async (t) => {
 test.serial("supports params", async (t) => {
 	const client = createClient(t);
 	const wrapper = createWrapper(client);
-	const repositoryResponse = createRepositoryResponse();
-	const queryResponsePages = createQueryResponsePages();
+	const repositoryResponse = prismicM.api.repository({ seed: t.title });
+	const queryResponsePages = createQueryResponsePages(t);
 	const document = queryResponsePages[0]
 		.results[0] as prismicT.PrismicDocument & { uid: string };
 	const ref = getMasterRef(repositoryResponse);
@@ -100,8 +100,8 @@ test.serial("supports params", async (t) => {
 
 test.serial("supports explicit client", async (t) => {
 	const client = createClient(t);
-	const repositoryResponse = createRepositoryResponse();
-	const queryResponsePages = createQueryResponsePages();
+	const repositoryResponse = prismicM.api.repository({ seed: t.title });
+	const queryResponsePages = createQueryResponsePages(t);
 	const document = queryResponsePages[0]
 		.results[0] as prismicT.PrismicDocument & { uid: string };
 	const ref = getMasterRef(repositoryResponse);

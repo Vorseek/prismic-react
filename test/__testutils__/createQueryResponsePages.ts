@@ -1,33 +1,30 @@
+import { ExecutionContext } from "ava";
 import * as prismicT from "@prismicio/types";
+import * as prismicM from "@prismicio/mock";
 
-import { createDocument } from "./createDocument";
-import { createQueryResponse } from "./createQueryResponse";
-
-type CreateQueryResponsePagesArgs<
-	TDocument extends prismicT.PrismicDocument = prismicT.PrismicDocument,
-> = {
+type CreateQueryResponsePagesArgs = {
 	numPages?: number;
 	numDocsPerPage?: number;
-	fields?: Partial<TDocument>;
 };
 
-export const createQueryResponsePages = <
-	TDocument extends prismicT.PrismicDocument = prismicT.PrismicDocument,
->({
-	numPages = 3,
-	numDocsPerPage = 3,
-	fields,
-}: CreateQueryResponsePagesArgs<TDocument> = {}): prismicT.Query<TDocument>[] => {
+export const createQueryResponsePages = (
+	t: ExecutionContext,
+	{ numPages = 3, numDocsPerPage = 3 }: CreateQueryResponsePagesArgs = {},
+): prismicT.Query[] => {
 	const documents = Array(numDocsPerPage)
 		.fill(undefined)
-		.map(() => createDocument(fields));
+		.map(() => {
+			return prismicM.value.document({ seed: t.title });
+		});
 
 	return Array(numPages)
 		.fill(undefined)
-		.map((_, i, arr) =>
-			createQueryResponse(documents, {
-				page: i + 1,
-				total_pages: arr.length,
-			}),
-		);
+		.map((_, i) => {
+			return prismicM.api.query({
+				seed: t.title,
+				page: i,
+				pageSize: numDocsPerPage,
+				documents,
+			});
+		});
 };

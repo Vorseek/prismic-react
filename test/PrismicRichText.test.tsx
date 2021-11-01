@@ -1,5 +1,6 @@
 import test from "ava";
 import * as prismicT from "@prismicio/types";
+import * as prismicM from "@prismicio/mock";
 import * as React from "react";
 
 import { PrismicRichText, PrismicLink } from "../src";
@@ -339,12 +340,7 @@ test("returns <image /> wrapped in <PrismicLink />", (t) => {
 });
 
 test("returns <div /> with embedded html if type is embed", (t) => {
-	const oembed = {
-		embed_url: "https://example.com",
-		type: "modern html elements",
-		provider_name: "Prismic",
-		html: "<marquee>Prismic is fun</marquee>",
-	};
+	const oembed = prismicM.value.embed({ seed: t.title });
 	const field: prismicT.RichTextField = [
 		{
 			type: prismicT.RichTextNodeType.embed,
@@ -358,7 +354,7 @@ test("returns <div /> with embedded html if type is embed", (t) => {
 			data-oembed={oembed.embed_url}
 			data-oembed-type={oembed.type}
 			data-oembed-provider={oembed.provider_name}
-			dangerouslySetInnerHTML={{ __html: oembed.html }}
+			dangerouslySetInnerHTML={{ __html: oembed.html ?? "" }}
 		/>,
 	);
 

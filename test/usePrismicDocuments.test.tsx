@@ -6,13 +6,13 @@ import * as React from "react";
 import * as msw from "msw";
 import * as mswNode from "msw/node";
 import * as prismic from "@prismicio/client";
+import * as prismicM from "@prismicio/mock";
 import { renderHook, cleanup } from "@testing-library/react-hooks";
 
 import { createClient } from "./__testutils__/createClient";
 import { createMockQueryHandler } from "./__testutils__/createMockQueryHandler";
 import { createMockRepositoryHandler } from "./__testutils__/createMockRepositoryHandler";
 import { createQueryResponsePages } from "./__testutils__/createQueryResponsePages";
-import { createRepositoryResponse } from "./__testutils__/createRepositoryResponse";
 import { getMasterRef } from "./__testutils__/getMasterRef";
 import { md5 } from "./__testutils__/md5";
 
@@ -35,8 +35,8 @@ const createWrapper = (client: prismic.Client): React.ComponentType => {
 test.serial("returns query", async (t) => {
 	const client = createClient(t);
 	const wrapper = createWrapper(client);
-	const repositoryResponse = createRepositoryResponse();
-	const queryResponsePages = createQueryResponsePages();
+	const repositoryResponse = prismicM.api.repository({ seed: t.title });
+	const queryResponsePages = createQueryResponsePages(t);
 	const ref = getMasterRef(repositoryResponse);
 
 	server.use(
@@ -57,8 +57,8 @@ test.serial("returns query", async (t) => {
 test.serial("supports params", async (t) => {
 	const client = createClient(t);
 	const wrapper = createWrapper(client);
-	const repositoryResponse = createRepositoryResponse();
-	const queryResponsePages = createQueryResponsePages();
+	const repositoryResponse = prismicM.api.repository({ seed: t.title });
+	const queryResponsePages = createQueryResponsePages(t);
 	const ref = getMasterRef(repositoryResponse);
 
 	const params = {
@@ -85,8 +85,8 @@ test.serial("supports params", async (t) => {
 
 test.serial("supports explicit client", async (t) => {
 	const client = createClient(t);
-	const repositoryResponse = createRepositoryResponse();
-	const queryResponsePages = createQueryResponsePages();
+	const repositoryResponse = prismicM.api.repository({ seed: t.title });
+	const queryResponsePages = createQueryResponsePages(t);
 	const ref = getMasterRef(repositoryResponse);
 
 	server.use(
@@ -123,9 +123,7 @@ test.serial("returns failed state on error", async (t) => {
 		{ wrapper },
 	);
 
-	await waitForValueToChange(
-		() => result.current[1].state === "failed",
-	);
+	await waitForValueToChange(() => result.current[1].state === "failed");
 
 	t.true(result.current[1].error instanceof prismic.ForbiddenError);
 	t.is(result.current[0], undefined);

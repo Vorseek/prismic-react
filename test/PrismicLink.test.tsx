@@ -19,13 +19,8 @@ const Link = ({ href, rel, target }: LinkProps) => (
 );
 
 test("renders a link from a document link field", (t) => {
-	const field: prismicT.FilledLinkToDocumentField = {
-		id: "id",
-		uid: "uid",
-		lang: "lang",
-		tags: [],
-		type: "page",
-		link_type: prismicT.LinkType.Document,
+	const field = {
+		...prismicM.value.contentRelationship({ seed: t.title }),
 		url: "url",
 	};
 
@@ -38,13 +33,7 @@ test("renders a link from a document link field", (t) => {
 });
 
 test("renders a link from a media link field", (t) => {
-	const field: prismicT.FilledLinkToMediaField = {
-		link_type: prismicT.LinkType.Media,
-		url: "url",
-		kind: "kind",
-		name: "name",
-		size: "size",
-	};
+	const field = prismicM.value.linkToMedia({ seed: t.title });
 
 	const actual = renderJSON(<PrismicLink field={field} />);
 	const expected = renderJSON(
@@ -55,10 +44,10 @@ test("renders a link from a media link field", (t) => {
 });
 
 test("renders a link from a web link field", (t) => {
-	const field: prismicT.FilledLinkToWebField = {
-		url: "url",
-		link_type: prismicT.LinkType.Web,
-	};
+	const field = prismicM.value.link({
+		seed: t.title,
+		type: prismicT.LinkType.Web,
+	});
 
 	const actual = renderJSON(<PrismicLink field={field} />);
 	const expected = renderJSON(
@@ -87,18 +76,14 @@ test("renders a link from a document using a Link Resolver", (t) => {
 	const document = prismicM.value.document({
 		seed: t.title,
 		withURL: false,
-		model: prismicM.model.customType({
-			seed: t.title,
-			withUID: true,
-		}),
 	});
-	const linkResolver: prismicH.LinkResolverFunction = (doc) => `/${doc.uid}`;
+	const linkResolver: prismicH.LinkResolverFunction = (doc) => `/${doc.id}`;
 
 	const actual = renderJSON(
 		<PrismicLink document={document} linkResolver={linkResolver} />,
 	);
 	const expected = renderJSON(
-		<a href={`/${document.uid}`} rel={undefined} target={undefined} />,
+		<a href={`/${document.id}`} rel={undefined} target={undefined} />,
 	);
 
 	t.deepEqual(actual, expected);
@@ -114,15 +99,7 @@ test("renders link from an href", (t) => {
 });
 
 test("prefers explicit href over field", (t) => {
-	const field: prismicT.FilledLinkToDocumentField = {
-		id: "id",
-		uid: "uid",
-		lang: "lang",
-		tags: [],
-		type: "page",
-		link_type: prismicT.LinkType.Document,
-		url: "url",
-	};
+	const field = prismicM.value.link({ seed: t.title });
 
 	const actual = renderJSON(<PrismicLink href="href" field={field} />);
 	const expected = renderJSON(
@@ -133,15 +110,10 @@ test("prefers explicit href over field", (t) => {
 });
 
 test("uses link resolver provided via context", (t) => {
-	const field: prismicT.FilledLinkToDocumentField = {
-		id: "id",
-		uid: "uid",
-		lang: "lang",
-		tags: [],
-		type: "page",
-		link_type: prismicT.LinkType.Document,
-	};
-	const linkResolver: prismicH.LinkResolverFunction = (doc) => `/${doc.uid}`;
+	const field = prismicM.value.contentRelationship({ seed: t.title });
+	delete field.url;
+
+	const linkResolver: prismicH.LinkResolverFunction = (doc) => `/${doc.id}`;
 
 	const actual = renderJSON(
 		<PrismicProvider linkResolver={linkResolver}>
@@ -149,39 +121,34 @@ test("uses link resolver provided via context", (t) => {
 		</PrismicProvider>,
 	);
 	const expected = renderJSON(
-		<a href={`/${field.uid}`} rel={undefined} target={undefined} />,
+		<a href={`/${field.id}`} rel={undefined} target={undefined} />,
 	);
 
 	t.deepEqual(actual, expected);
 });
 
 test("uses link resolver provided via props", (t) => {
-	const field: prismicT.FilledLinkToDocumentField = {
-		id: "id",
-		uid: "uid",
-		lang: "lang",
-		tags: [],
-		type: "page",
-		link_type: prismicT.LinkType.Document,
-	};
-	const linkResolver: prismicH.LinkResolverFunction = (doc) => `/${doc.uid}`;
+	const field = prismicM.value.contentRelationship({ seed: t.title });
+	delete field.url;
+
+	const linkResolver: prismicH.LinkResolverFunction = (doc) => `/${doc.id}`;
 
 	const actual = renderJSON(
 		<PrismicLink field={field} linkResolver={linkResolver} />,
 	);
 	const expected = renderJSON(
-		<a href={`/${field.uid}`} rel={undefined} target={undefined} />,
+		<a href={`/${field.id}`} rel={undefined} target={undefined} />,
 	);
 
 	t.deepEqual(actual, expected);
 });
 
 test("if given a link field value with _blank target, use target and include rel='noopener noreferrer'", (t) => {
-	const field: prismicT.FilledLinkToWebField = {
-		url: "url",
-		link_type: prismicT.LinkType.Web,
-		target: "_blank",
-	};
+	const field = prismicM.value.link({
+		seed: t.title,
+		type: prismicT.LinkType.Web,
+		withTargetBlank: true,
+	});
 
 	const actual = renderJSON(<PrismicLink field={field} />);
 	const expected = renderJSON(
@@ -192,11 +159,11 @@ test("if given a link field value with _blank target, use target and include rel
 });
 
 test("allow overriding default rel", (t) => {
-	const field: prismicT.FilledLinkToWebField = {
-		url: "url",
-		link_type: prismicT.LinkType.Web,
-		target: "_blank",
-	};
+	const field = prismicM.value.link({
+		seed: t.title,
+		type: prismicT.LinkType.Web,
+		withTargetBlank: true,
+	});
 
 	const actual = renderJSON(<PrismicLink field={field} rel="rel" />);
 	const expected = renderJSON(
@@ -208,11 +175,11 @@ test("allow overriding default rel", (t) => {
 });
 
 test("allow overriding default target", (t) => {
-	const field: prismicT.FilledLinkToWebField = {
-		url: "url",
-		link_type: prismicT.LinkType.Web,
-		target: "_blank",
-	};
+	const field = prismicM.value.link({
+		seed: t.title,
+		type: prismicT.LinkType.Web,
+		withTargetBlank: true,
+	});
 
 	const actual = renderJSON(<PrismicLink field={field} target="target" />);
 	const expected = renderJSON(
@@ -223,10 +190,11 @@ test("allow overriding default target", (t) => {
 });
 
 test("if manually given _blank to target, use rel'noopener norefferer", (t) => {
-	const field: prismicT.FilledLinkToWebField = {
-		url: "url",
-		link_type: prismicT.LinkType.Web,
-	};
+	const field = prismicM.value.link({
+		seed: t.title,
+		type: prismicT.LinkType.Web,
+		withTargetBlank: false,
+	});
 
 	const actual = renderJSON(<PrismicLink field={field} target="_blank" />);
 	const expected = renderJSON(

@@ -9,7 +9,10 @@ import { renderJSON } from "./__testutils__/renderJSON";
 import { SliceZone, TODOSliceComponent, SliceComponentProps } from "../src";
 
 type StringifySliceComponentProps = {
-	/** A unique identifier for the component to differentiate this component from other instances. */
+	/**
+	 * A unique identifier for the component to differentiate this component from
+	 * other instances.
+	 */
 	id: string;
 } & SliceComponentProps;
 
